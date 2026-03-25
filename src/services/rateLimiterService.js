@@ -1,9 +1,11 @@
-const { client } = require("../redis/client.js");
+const { redisClient } = require("../redis/client.js");
 
 const checkRateLimit = async (key, limit, refillRate) => {
   const now = Math.floor(Date.now() / 1000);
 
-  const data = await client.hGetAll(key);
+  const data = await redisClient.hGetAll(key);
+
+  console.log(`Data for key ${key}:`, data);
 
   let tokens = data.tokens ? parseFloat(data.tokens) : limit;
   let lastRefill = data.last_refill ? parseInt(data.last_refill) : now;
@@ -19,12 +21,12 @@ const checkRateLimit = async (key, limit, refillRate) => {
 
   tokens -= 1;
 
-  await client.hSet(key, {
+  await redisClient.hSet(key, {
     tokens,
     last_refill: now,
   });
 
-  await client.expire(key, 60); // TTL
+  await redisClient.expire(key, 60); // TTL
 
   return { allowed: true, tokens };
 };

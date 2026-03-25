@@ -1,7 +1,7 @@
 // server.js
 
 const fastify = require("fastify")({
-  logger: true,
+  // logger: true,
 });
 const { connectRedis, redisClient } = require("./redis/client");
 const { rateLimiter } = require("./middleware/rateLimiter");
@@ -9,7 +9,7 @@ const { rateLimiter } = require("./middleware/rateLimiter");
 fastify.addHook(
   "preHandler",
   rateLimiter({
-    limit: 5,
+    limit: 1,
     refillRate: 1,
   }),
 );

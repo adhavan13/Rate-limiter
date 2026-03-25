@@ -7,6 +7,7 @@ const rateLimiter = (options) => {
 
   return async (req, reply) => {
     const key = getKey(req);
+    console.log(`Checking rate limit for key: ${key}`);
 
     const result = await checkRateLimit(key, limit, refillRate);
 
