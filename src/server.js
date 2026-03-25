@@ -3,7 +3,7 @@
 const fastify = require("fastify")({
   logger: true,
 });
-const { connectRedis } = require("./redis/client");
+const { connectRedis, redisClient } = require("./redis/client");
 const { rateLimiter } = require("./middleware/rateLimiter");
 
 fastify.addHook(

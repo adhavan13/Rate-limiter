@@ -1,26 +1,51 @@
 require("dotenv").config();
+// const redis = require("redis");
+
+// const redisClient = redis.createClient({
+//   password: process.env.REDIS_PASSWORD,
+//   socket: {
+//     host: process.env.REDIS_CONNECTION_STRING,
+//     port: process.env.REDIS_PORT,
+//   },
+// });
+
+// redisClient.on("error", (err) => {
+//   console.error("Redis Client Error", err);
+// });
+
+// const connectRedis = async () => {
+//   try {
+//     await redisClient.connect();
+//     console.log("✅ Connected to Redis");
+//   } catch (err) {
+//     console.error("Failed to connect to Redis", err);
+//     process.exit(1);
+//   }
+// };
+
+// module.exports = { connectRedis, redisClient };
 const { createClient } = require("redis");
 
-console.log(process.env.REDIS_CONNECTION_STRING);
-const client = createClient({
-  url: process.env.REDIS_CONNECTION_STRING,
+const redisClient = createClient({
+  username: "default",
+  password: "EILMVLHw74oJJNY0WhfPljZLdByvT9I9",
   socket: {
-    tls: true, // 👈 THIS is missing
-    rejectUnauthorized: false, // 👈 important for Redis Cloud
-    connectTimeout: 10000,
+    host: "redis-17977.c299.asia-northeast1-1.gce.cloud.redislabs.com",
+    port: 17977,
   },
 });
 
-client.on("error", (err) => console.error("Redis Error:", err));
-client.on("connect", () => console.log("🔄 Connecting to Redis..."));
-client.on("ready", () => console.log("✅ Redis ready"));
+redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
 const connectRedis = async () => {
   try {
-    await client.connect();
+    await redisClient.connect();
+    console.log("✅ Connected to Redis");
   } catch (err) {
-    console.error("❌ Connection failed:", err);
+    console.error("Failed to connect to Redis", err);
+    process.exit(1);
   }
 };
+// await connectRedis();
 
-module.exports = { connectRedis, client };
+module.exports = { connectRedis, redisClient };
