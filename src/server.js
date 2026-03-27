@@ -3,22 +3,27 @@
 const fastify = require("fastify")({
   // logger: true,
 });
-const { connectRedis, redisClient } = require("./redis/client");
+const { connectRedis } = require("./config/redisClient");
 const { rateLimiter } = require("./middleware/rateLimiter");
 
 fastify.addHook(
   "preHandler",
   rateLimiter({
-    limit: 1,
-    refillRate: 0.5,
+    limit: 10,
+    refillRate: 1,
     windowSize: 60,
-    // algorithm: "sliding_window",
-    algorithm: "token_bucket",
+    algorithm: "sliding_window",
+    // algorithm: "token_bucket",
   }),
 );
 
 fastify.get("/", async (request, reply) => {
-  return { message: "Hello World" };
+  try {
+    return { message: "Hello World" };
+  } catch (err) {
+    console.error("Route handler failed:", err);
+    return reply.code(500).send({ message: "Internal server error" });
+  }
 });
 
 // Start server
@@ -36,6 +41,7 @@ const start = async () => {
     console.log(`🚀 Server running on http://localhost:${port}`);
   } catch (err) {
     fastify.log.error(err);
+    console.error("Server startup failed:", err);
     process.exit(1);
   }
 };

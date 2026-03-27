@@ -21,8 +21,23 @@ const rateLimiter = (options) => {
         .send({ message: `Invalid rate limit algorithm: ${algorithm}` });
     }
 
-    const thirdArg = algorithm === "sliding_window" ? windowSize : refillRate;
-    const result = await strategy(key, limit, thirdArg);
+    const payload =
+      algorithm === "sliding_window"
+        ? { key, limit, windowSize }
+        : { key, limit, refillRate };
+
+    let result;
+    try {
+      result = await strategy(payload);
+      console.log("rate limiter result", { algorithm, key, result });
+    } catch (err) {
+      console.error("rate limiter strategy execution failed", {
+        algorithm,
+        key,
+        message: err.message,
+      });
+      return reply.code(500).send({ message: "Rate limiter internal error" });
+    }
 
     if (!result.allowed) {
       return reply
