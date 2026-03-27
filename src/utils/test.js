@@ -17,7 +17,7 @@ const TOTAL_REQUESTS = 50;
           .catch((err) => {
             if (err.response) {
               console.log(
-                `Request ${i + 1}: ${err.response.status} (Rate Limited?)`,
+                `Request ${i + 1}: ${err.response.status} - ${err.response.data.message}`,
               );
             } else {
               console.error(`Request ${i + 1}: Error`, err.message);

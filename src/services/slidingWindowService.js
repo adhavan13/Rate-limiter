@@ -3,7 +3,6 @@ const { slidingWindow } = require("../redis/lua/scripts");
 
 const checkSlidingWindow = async ({ key, limit, windowSize }) => {
   const now = Math.floor(Date.now() / 1000);
-  console.log("checkSlidingWindow enter", { key, limit, windowSize, now });
   const currentWindow = Math.floor(now / windowSize) * windowSize;
   const previousWindow = currentWindow - windowSize;
 

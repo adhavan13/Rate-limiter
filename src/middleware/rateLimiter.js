@@ -1,5 +1,6 @@
 const { getKey } = require("../utils/keyGenerator.js");
 const { getStrategy } = require("../strategies/index.js");
+const { recordRequest } = require("../utils/metrics.js");
 
 const rateLimiter = (options) => {
   const {
@@ -13,6 +14,7 @@ const rateLimiter = (options) => {
   );
   return async (req, reply) => {
     const key = getKey(req, algorithm);
+    const route = req.url;
 
     const strategy = getStrategy(algorithm);
     if (!strategy) {
@@ -29,7 +31,6 @@ const rateLimiter = (options) => {
     let result;
     try {
       result = await strategy(payload);
-      console.log("rate limiter result", { algorithm, key, result });
     } catch (err) {
       console.error("rate limiter strategy execution failed", {
         algorithm,
@@ -40,11 +41,13 @@ const rateLimiter = (options) => {
     }
 
     if (!result.allowed) {
+      recordRequest(route, false);
       return reply
         .code(429)
         .header("Retry-After", 10)
         .send({ message: "Too Many Requests" });
     }
+    recordRequest(route, true);
     return;
   };
 };

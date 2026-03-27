@@ -5,6 +5,7 @@ const fastify = require("fastify")({
 });
 const { connectRedis } = require("./config/redisClient");
 const { rateLimiter } = require("./middleware/rateLimiter");
+const { metricsRoute } = require("./routes/metrics");
 
 fastify.addHook(
   "preHandler",
@@ -12,8 +13,8 @@ fastify.addHook(
     limit: 10,
     refillRate: 1,
     windowSize: 60,
-    algorithm: "sliding_window",
-    // algorithm: "token_bucket",
+    // algorithm: "sliding_window",
+    algorithm: "token_bucket",
   }),
 );
 
@@ -25,6 +26,8 @@ fastify.get("/", async (request, reply) => {
     return reply.code(500).send({ message: "Internal server error" });
   }
 });
+
+fastify.register(metricsRoute);
 
 // Start server
 const start = async () => {
