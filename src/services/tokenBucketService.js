@@ -1,6 +1,6 @@
 const { redisClient } = require("../redis/client.js");
 
-const checkRateLimit = async (key, limit, refillRate) => {
+const checkTokenBucket = async (key, limit, refillRate) => {
   const now = Math.floor(Date.now() / 1000);
 
   const data = await redisClient.hGetAll(key);
@@ -31,4 +31,4 @@ const checkRateLimit = async (key, limit, refillRate) => {
   return { allowed: true, tokens };
 };
 
-module.exports = { checkRateLimit };
+module.exports = { checkTokenBucket };

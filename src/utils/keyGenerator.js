@@ -1,5 +1,5 @@
-const getKey = (req) => {
-  return `rate_limit:user:${req.ip}`;
+const getKey = (req, algorithm) => {
+  return `rate_limit:${algorithm}:${req.ip}`;
 };
 
 module.exports = { getKey };

@@ -10,7 +10,10 @@ fastify.addHook(
   "preHandler",
   rateLimiter({
     limit: 1,
-    refillRate: 1,
+    refillRate: 0.5,
+    windowSize: 60,
+    // algorithm: "sliding_window",
+    algorithm: "token_bucket",
   }),
 );
 
