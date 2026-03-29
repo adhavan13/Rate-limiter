@@ -32,7 +32,12 @@ tokens = math.min(limit, tokens + refill)
 
 -- decision
 if tokens < 1 then
-  return {0, tokens} -- blocked
+  local missing = 1 - tokens
+  local retryAfter = missing / refillRate
+  if retryAfter < 1 then
+    retryAfter = 1
+  end
+  return {0, tokens, retryAfter} -- blocked
 end
 
 -- consume token
@@ -44,6 +49,10 @@ redis.call("HMSET", key,
   "last_refill", now
 )
 
-redis.call("EXPIRE", key, 60)
+local ttl = math.ceil(limit / refillRate)
+if ttl < 1 then
+  ttl = 1
+end
+redis.call("EXPIRE", key, ttl)
 
-return {1, tokens} -- allowed
+return {1, tokens, 0} -- allowed

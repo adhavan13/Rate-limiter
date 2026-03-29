@@ -1,12 +1,12 @@
-const { redisClient } = require("../config/redisClient");
 const { tokenBucket } = require("../redis/lua/scripts");
 
-const checkTokenBucket = async ({ key, limit, refillRate }) => {
-  const now = Math.floor(Date.now() / 1000);
+const checkTokenBucket = async ({ redis, key, limit, refillRate }) => {
+  const now = Date.now(); // ✅ millisecond precision
 
   let result;
+
   try {
-    result = await redisClient.eval(tokenBucket, {
+    result = await redis.eval(tokenBucket, {
       keys: [key],
       arguments: [String(limit), String(refillRate), String(now)],
     });
@@ -18,9 +18,17 @@ const checkTokenBucket = async ({ key, limit, refillRate }) => {
     throw err;
   }
 
+  const allowed = result[0] === 1;
+  const tokens = parseFloat(result[1]);
+  const parsedRetryAfter = parseFloat(result[2]);
+  const retryAfter = Number.isFinite(parsedRetryAfter)
+    ? Math.max(0, parsedRetryAfter)
+    : 1;
+
   return {
-    allowed: result[0] === 1,
-    tokens: parseFloat(result[1]),
+    allowed,
+    remaining: Math.max(0, Math.floor(tokens)), // ✅ normalize
+    retryAfter, // ✅ real value
   };
 };
 
