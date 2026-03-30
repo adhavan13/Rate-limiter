@@ -19,7 +19,8 @@ Built as a Fastify plugin — drop it in, configure it, and it works.
 
 ## Architecture
 
-![Architecture Diagram](./architecture.svg)
+<img width="1253" height="835" alt="image" src="https://github.com/user-attachments/assets/cae236f7-0e65-49ce-825f-f28b1fdf9c8d" />
+
 
 The request flow:
 
