@@ -68,26 +68,36 @@ npm install fastify ioredis
 ## Quick Start
 
 ```javascript
-const fastify = require('fastify')({ trustProxy: true });
-const rateLimiter = require('fastify-distributed-rate-limiter');
+const fastify = require("fastify")({ logger: true, trustProxy: true });
+const Redis = require("ioredis");
 
-fastify.register(rateLimiter, {
-  redis: {
-    host: 'localhost',
-    port: 6379,
-  },
-  getConfig: (req) => ({
-    algorithm: 'sliding-window',
-    limit: 100,
-    windowMs: 60_000,
-  }),
+// ✅ Correct cloud Redis config
+const redis = new Redis({
+  host: "*******************************",
+  port: ********,
+  username: "*******",
+  password: "****************************",
 });
 
-fastify.get('/api/data', async (req, reply) => {
-  return { message: 'Hello!' };
+// ✅ Handle connection errors (important)
+redis.on("error", (err) => {
+  console.error("Redis error:", err.message);
 });
 
-fastify.listen({ port: 3000 });
+fastify.register(require("ratelimiter"), {
+  redisClient: redis,
+  limit: 10,
+  refillRate: 1,
+  algorithm: "token_bucket",
+});
+
+fastify.listen({ port: 4000 }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server running at ${address}`);
+});
 ```
 
 ---
@@ -113,21 +123,6 @@ fastify.listen({ port: 3000 });
 | `capacity` | `number` | Max token capacity (token bucket) |
 | `refillRate` | `number` | Tokens per second refill rate (token bucket) |
 
-### Redis Options
-
-```javascript
-// Local Redis
-redis: { host: 'localhost', port: 6379 }
-
-// Cloud Redis with TLS
-redis: { url: 'rediss://user:password@host:6380', tls: {} }
-
-// Inject an existing ioredis client
-redis: existingRedisClient
-```
-
----
-
 ## Algorithms
 
 ### Token Bucket
@@ -136,7 +131,7 @@ Best for APIs that allow **burst traffic** — users can accumulate tokens and s
 
 ```javascript
 getConfig: (req) => ({
-  algorithm: 'token-bucket',
+  algorithm: 'token_bucket',
   capacity: 20,      // max burst size
   refillRate: 5,     // tokens per second
 })
@@ -148,15 +143,15 @@ getConfig: (req) => ({
 - If tokens are available: allow. If not: 429 with `Retry-After` header
 - All logic runs atomically inside a Lua script
 
-### Sliding Window Counter
+### Fixed Window Counter
 
 Best for **smooth, consistent rate limiting** — no burst allowance, requests are spread evenly.
 
 ```javascript
 getConfig: (req) => ({
-  algorithm: 'sliding-window',
+  algorithm: 'fixed_window',
   limit: 100,
-  windowMs: 60_000,  // 60 seconds
+  windowSize: 60,  // 60 seconds
 })
 ```
 
@@ -164,34 +159,6 @@ getConfig: (req) => ({
 - Tracks counters for the current and previous time windows
 - Applies a weighted interpolation to estimate the request rate across the sliding boundary
 - More accurate and memory-efficient than storing individual request timestamps
-
----
-
-## Dynamic Strategy Selection
-
-The `getConfig` function receives the full Fastify request object, enabling per-route or per-user logic:
-
-```javascript
-getConfig: (req) => {
-  // Strict sliding window for login
-  if (req.routerPath === '/login') {
-    return { algorithm: 'sliding-window', limit: 5, windowMs: 60_000 };
-  }
-
-  // Token bucket with burst for payment API
-  if (req.routerPath === '/payment') {
-    return { algorithm: 'token-bucket', capacity: 10, refillRate: 2 };
-  }
-
-  // Per-user limits for authenticated routes
-  if (req.user?.role === 'premium') {
-    return { algorithm: 'token-bucket', capacity: 500, refillRate: 50 };
-  }
-
-  // Default
-  return { algorithm: 'sliding-window', limit: 60, windowMs: 60_000 };
-}
-```
 
 ---
 
@@ -306,27 +273,6 @@ end
 
 ---
 
-## Tradeoffs
-
-| Consideration | Detail |
-|---|---|
-| Redis dependency | Adds an external service requirement |
-| Latency overhead | ~1–3ms per request for the Redis round-trip |
-| Lua complexity | Scripts are harder to debug, but guarantee correctness |
-| Single Redis | A single Redis instance is a potential SPOF — use Redis Sentinel or Cluster for HA |
-
----
-
-## Roadmap
-
-- [ ] `EVALSHA` instead of `EVAL` to reduce script transmission overhead
-- [ ] Redis-based dynamic config (update limits without restart)
-- [ ] Prometheus/Grafana metrics integration
-- [ ] Adaptive rate limiting based on system load
-- [ ] Optional centralized rate limiter microservice architecture
-
----
-
 ## Use Cases
 
 - **API Gateways** — global request throttling across all services
@@ -344,7 +290,3 @@ end
 - ioredis >= 5
 
 ---
-
-## License
-
-MIT © 2025
