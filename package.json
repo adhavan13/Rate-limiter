@@ -1,23 +1,21 @@
 {
-  "name": "ratelimiter",
-  "version": "1.0.0",
-  "description": "Fastify rate limiter plugin using Redis with token bucket and sliding window strategies.",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "name": "@adhavan/distributed-ratelimiter",
+  "version": "1.0.1",
+  "description": "Distributed rate limiter Fastify plugin using Redis and Lua (Token Bucket & Sliding Window)",
+  "main": "index.js",
   "type": "commonjs",
+  "keywords": [
+    "rate-limiter",
+    "redis",
+    "fastify",
+    "token-bucket",
+    "sliding-window",
+    "distributed"
+  ],
+  "author": "Adhavan",
+  "license": "MIT",
   "dependencies": {
-    "axios": "^1.13.6",
-    "dotenv": "^17.3.1",
-    "fastify": "^5.8.4",
     "fastify-plugin": "^5.1.0",
-    "ioredis": "^5.10.1",
-    "node-fetch": "^3.3.2",
-    "nodemon": "^3.1.14",
-    "redis": "^5.11.0"
+    "ioredis": "^5.10.1"
   }
 }
