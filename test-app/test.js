@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const URL = "http://localhost:3000/";
+const URL = "http://localhost:4000/";
 const TOTAL_REQUESTS = 50;
 
 (async () => {
@@ -17,7 +17,7 @@ const TOTAL_REQUESTS = 50;
           .catch((err) => {
             if (err.response) {
               console.log(
-                `Request ${i + 1}: ${err.response.status} - ${err.response.data.message}`,
+                `Request ${i + 1}: ${err.response.status} - ${err.response.data.message} - Retry-After: ${err.response.headers["retry-after"]}`,
               );
             } else {
               console.error(`Request ${i + 1}: Error`, err.message);

@@ -4,12 +4,15 @@ const checkTokenBucket = async ({ redis, key, limit, refillRate }) => {
   const now = Date.now(); // ✅ millisecond precision
 
   let result;
-
   try {
-    result = await redis.eval(tokenBucket, {
-      keys: [key],
-      arguments: [String(limit), String(refillRate), String(now)],
-    });
+    result = await redis.eval(
+      tokenBucket,
+      1,
+      key,
+      String(limit),
+      String(refillRate),
+      String(now),
+    );
   } catch (err) {
     console.error("checkTokenBucket eval failed", {
       key,
@@ -26,9 +29,9 @@ const checkTokenBucket = async ({ redis, key, limit, refillRate }) => {
     : 1;
 
   return {
-    allowed,
+    allowed: result[0] === 1,
     remaining: Math.max(0, Math.floor(tokens)), // ✅ normalize
-    retryAfter, // ✅ real value
+    retryAfter: result[2], // ✅ real value
   };
 };
 

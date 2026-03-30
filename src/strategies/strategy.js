@@ -1,9 +1,9 @@
 const { checkTokenBucket } = require("../services/tokenBucketService");
-const { checkSlidingWindow } = require("../services/slidingWindowService");
+const { checkFixedWindow } = require("../services/fixedWindowService");
 
 const strategies = {
   token_bucket: checkTokenBucket,
-  sliding_window: checkSlidingWindow,
+  fixed_window: checkFixedWindow,
 };
 
 const getStrategy = (name) => {

@@ -7,7 +7,7 @@ const loadScript = (fileName) => {
 
 const scripts = {
   tokenBucket: loadScript("tokenBucket.lua"),
-  slidingWindow: loadScript("slidingWindow.lua"),
+  slidingWindow: loadScript("fixedWindow.lua"),
 };
 
 module.exports = scripts;
