@@ -1,5 +1,5 @@
 {
-  "name": "@adhavan/distributed-ratelimiter",
+  "name": "@adhavan_se_v/distributed-ratelimiter",
   "version": "1.0.1",
   "description": "Distributed rate limiter Fastify plugin using Redis and Lua (Token Bucket & Sliding Window)",
   "main": "index.js",
